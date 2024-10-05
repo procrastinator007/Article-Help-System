@@ -1,7 +1,5 @@
 package cse360;
 import java.util.Scanner;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 
 public class Main {
 
@@ -37,57 +35,87 @@ public class Main {
     }
 
     private static void register(Scanner scanner) {
-        String username;
+        String firstName, middleName, lastName, username, email, password;
 
-        // Loop to keep asking for a valid username
+        // Ask for first name, middle name, last name, and validate lengths
+        while (true) {
+            System.out.println("Enter First Name (less than 15 chars):");
+            firstName = scanner.nextLine();
+            if (firstName.length() < 15) break;
+            System.out.println("First name is too long.");
+        }
+
+        while (true) {
+            System.out.println("Enter Middle Name (less than 15 chars):");
+            middleName = scanner.nextLine();
+            if (middleName.length() < 15) break;
+            System.out.println("Middle name is too long.");
+        }
+
+        while (true) {
+            System.out.println("Enter Last Name (less than 15 chars):");
+            lastName = scanner.nextLine();
+            if (lastName.length() < 15) break;
+            System.out.println("Last name is too long.");
+        }
+
+        // Loop to keep asking for a valid email
+        while (true) {
+            System.out.println("Enter an email (must end with @asu.edu):");
+            email = scanner.nextLine();
+            if (email.endsWith("@asu.edu")) break;
+            System.out.println("Invalid email. Please try again.");
+        }
+
+        // Loop for username validation
         while (true) {
             System.out.println("Enter a username (must end with @asu.edu):");
             username = scanner.nextLine();
-
-            // Check if the username ends with "@asu.edu"
-            if (username.endsWith("@asu.edu")) {
-                break;  // Exit the loop when the username is valid
-            }
-
-            System.out.println("Invalid username. It must end with @asu.edu. Please try again.");
+            if (username.length() <= 15 && username.endsWith("@asu.edu")) break;
+            System.out.println("Invalid username. It must be less than 15 characters and end with @asu.edu.");
         }
 
-        // Check if the username is already registered
+        // Check if username is already taken
         if (Database.getUser(username) != null) {
             System.out.println("Username already exists. Please choose a different one.");
-            return;  // Exit the method early if the username is taken
+            return;
         }
 
-        String password;
-        // Loop to keep asking for a valid password
+        // Ask for and confirm password (with validation)
         while (true) {
             System.out.println("Enter a password (min 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special character):");
             password = scanner.nextLine();
+            System.out.println("Confirm your password:");
+            String confirmPassword = scanner.nextLine();
 
-            // Validate password based on the required rules
-            if (isValidPassword(password)) {
-                break;  // Exit the loop when the password is valid
+            if (!password.equals(confirmPassword)) {
+                System.out.println("Passwords do not match.");
+            } else if (!isValidPassword(password)) {
+                System.out.println("Invalid password format. Please try again.");
+            } else {
+                break;
             }
-
-            System.out.println("Invalid password. Please try again.");
         }
 
-        System.out.println("Confirm your password:");
-        String confirmPassword = scanner.nextLine();
+        // Determine role: First user defaults to admin
+        User newUser;
+        if (Database.isEmpty()) {
+            System.out.println("First user detected. Defaulting role to Admin.");
+            newUser = new Admin(firstName, middleName, lastName, username, PasswordHash.hashPassword(password), email);
+        } else {
+            System.out.println("Choose a role: 1 for Teacher, 2 for Student.");
+            int role = scanner.nextInt();
+            scanner.nextLine();  // Consume newline
 
-        // Check if the two passwords match
-        if (!password.equals(confirmPassword)) {
-            System.out.println("Passwords do not match. Registration failed.");
-            return;  // Exit the method early if validation fails
+            if (role == 1) {
+                newUser = new Teacher(firstName, middleName, lastName, username, PasswordHash.hashPassword(password), email);
+            } else {
+                newUser = new Student(firstName, middleName, lastName, username, PasswordHash.hashPassword(password), email);
+            }
         }
 
-        // Hash the password before storing it
-        String hashedPassword = PasswordHash.hashPassword(password);
-
-        // Create a new user and add to the database
-        User newUser = new User(username, hashedPassword);
+        // Add new user to the database
         Database.addUser(newUser);
-
         System.out.println("Registration successful! You can now log in.");
     }
 
@@ -105,6 +133,13 @@ public class Main {
             // Compare entered password hash with stored password hash
             if (PasswordHash.hashPassword(password).equals(user.getPasswordHash())) {
                 System.out.println("Login successful! Welcome, " + username);
+                if (user instanceof Admin) {
+                    showAdminView(scanner);
+                } else if (user instanceof Teacher) {
+                    showTeacherView(scanner, (Teacher) user);
+                } else {
+                    showStudentView(scanner, (Student) user);
+                }
             } else {
                 System.out.println("Invalid password.");
             }
@@ -113,12 +148,27 @@ public class Main {
         }
     }
 
-    // Function to validate if the password meets the criteria
+    // Show Admin view with privileges to manage users
+    private static void showAdminView(Scanner scanner) {
+        System.out.println("Admin view: You can view all users, add or delete users.");
+        for (User user : Database.getAllUsers()) {
+            System.out.println(user.getFullName() + " - " + user.getRole());
+        }
+    }
+
+    // Show Teacher view
+    private static void showTeacherView(Scanner scanner, Teacher teacher) {
+        System.out.println("Teacher view: You can see your classes and students.");
+    }
+
+    // Show Student view
+    private static void showStudentView(Scanner scanner, Student student) {
+        System.out.println("Student view: You can see your classes and teacher's contact.");
+    }
+
+    // Password validation method
     private static boolean isValidPassword(String password) {
-        // Regular expression for at least 8 characters, 1 uppercase, 1 lowercase, 1 number, 1 special character
         String passwordRegex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%^&+=!]).{8,}$";
-        Pattern pattern = Pattern.compile(passwordRegex);
-        Matcher matcher = pattern.matcher(password);
-        return matcher.matches();
+        return password.matches(passwordRegex);
     }
 }
