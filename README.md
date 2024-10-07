@@ -48,7 +48,7 @@ This abstract class will be extended by the Admin, Teacher, and Student classes.
 Admin.java: 
 The Admin.java file defines the Admin class, which extends the User abstract class. It overrides the getRole() method to return "Admin" as the role. Other functionalities, such as user details and password management, are inherited from the User class.
 
-Teacher.Java
+Teacher.Java:
 
 The Teacher.java file defines the Teacher class, which extends the User class. Here's what it contains:
 
@@ -59,7 +59,7 @@ Constructor: Inherits from User, allowing teacher-specific details to be passed 
 
 getRole(): Returns "Teacher" as the role.
 
-Student.java
+Student.java:
 The Student.java file defines the Student class, which extends the User class. Here are its details:
 
 Fields:
@@ -69,7 +69,7 @@ Constructor: Inherits from User, allowing student-specific details to be passed 
 
 getRole(): Returns "Student" as the role.
 
-Password.java
+Password.java:
 The PasswordHash.java file provides a simple utility to hash passwords using the SHA-256 algorithm. Here’s a summary of its functionality:
 
 hashPassword(String password):
