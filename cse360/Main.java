@@ -71,7 +71,7 @@ public class Main {
         while (true) {
             System.out.println("Enter a username (must end with @asu.edu):");
             username = scanner.nextLine();
-            if (username.length() <= 15 && username.endsWith("@asu.edu")) break;
+            if (username.length() <= 15) break;
             System.out.println("Invalid username. It must be less than 15 characters and end with @asu.edu.");
         }
 
