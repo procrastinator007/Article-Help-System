@@ -5,25 +5,34 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 public class Database {
+    // Constant representing the file name where the data is stored
     private static final String DATA_FILE = "database.ser";
+    
+    // List to store user objects
     private static ArrayList<User> users = new ArrayList<>();
+    
+    // String to store the one-time invite code
     private static String inviteCode;
 
+    // Static block to initialize the database by loading existing data from the file
     static {
-        // Load data from file at the start
+        // Load data from the file when the class is loaded
         loadData();
     }
 
-    // Load users and invite code from the serialized file
+    // Method to load users and invite code from the serialized file
     private static void loadData() {
         File file = new File(DATA_FILE);
+        // Check if the file exists and is not empty
         if (!file.exists() || file.length() == 0) {
             System.out.println("No existing data found, starting fresh.");
             saveData();  // Save an empty database if no file exists
             return;
         }
 
+        // Try to read the data from the file
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+            // Deserialize the list of users and invite code
             users = (ArrayList<User>) ois.readObject();
             inviteCode = (String) ois.readObject();
         } catch (IOException | ClassNotFoundException e) {
@@ -31,9 +40,11 @@ public class Database {
         }
     }
 
-    // Save users and invite code to the serialized file
+    // Method to save users and invite code to the serialized file
     private static void saveData() {
+        // Try to write the data to the file
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(DATA_FILE))) {
+            // Serialize the list of users and invite code
             oos.writeObject(users);
             oos.writeObject(inviteCode);
         } catch (IOException e) {
@@ -41,52 +52,55 @@ public class Database {
         }
     }
 
-    // Add a new user to the database
+    // Method to add a new user to the database
     public static void addUser(User user) {
-        users.add(user);
-        saveData();  // Save data after adding a new user
+        users.add(user);  // Add the user to the list
+        saveData();  // Save data after adding a new user to persist changes
     }
 
-    // Delete a user from the database
+    // Method to delete a user from the database by username
     public static void deleteUser(String username) {
+        // Remove user if the username matches
         users.removeIf(user -> user.getUsername().equals(username));
-        saveData();  // Save data after deleting the user
+        saveData();  // Save data after deleting the user to persist changes
     }
 
-    // Get user by username for login validation
+    // Method to get a user by username for login validation
     public static User getUser(String username) {
+        // Iterate through the list of users to find a match
         for (User user : users) {
             if (user.getUsername().equals(username)) {
-                return user;
+                return user;  // Return the user if found
             }
         }
-        return null;  // Return null if user not found
+        return null;  // Return null if the user is not found
     }
 
-    // Method to get all users (useful for admin viewing purposes)
+    // Method to get a list of all users (useful for admin purposes)
     public static ArrayList<User> getAllUsers() {
-        return new ArrayList<>(users);
+        return new ArrayList<>(users);  // Return a copy of the user list
     }
 
-    // Generate a one-time invite code
+    // Method to generate a new one-time invite code
     public static String generateInviteCode() {
-        inviteCode = UUID.randomUUID().toString();
-        saveData();  // Save the new invite code
+        inviteCode = UUID.randomUUID().toString();  // Generate a new unique code
+        saveData();  // Save the new invite code to persist it
         return inviteCode;
     }
 
-    // Validate and consume the invite code
+    // Method to validate and consume the invite code
     public static boolean validateInviteCode(String code) {
+        // Check if the invite code matches the stored code
         if (inviteCode != null && inviteCode.equals(code)) {
-            inviteCode = null;  // Consume the code
-            saveData();  // Save the change
-            return true;
+            inviteCode = null;  // Consume the code by setting it to null
+            saveData();  // Save the change to persist the update
+            return true;  // Return true if the code was valid
         }
-        return false;
+        return false;  // Return false if the code was invalid
     }
 
-    // Check if the database is empty
+    // Method to check if the database is empty (no users present)
     public static boolean isEmpty() {
-        return users.isEmpty();
+        return users.isEmpty();  // Return true if the user list is empty
     }
 }
