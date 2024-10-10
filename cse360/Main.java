@@ -119,20 +119,42 @@ public class Main {
         // Determine role: First user defaults to admin
         User newUser;
         if (Database.isEmpty()) {
-            System.out.println("First user detected. Defaulting role to Admin.");
-            newUser = new Admin(firstName, middleName, lastName, username, PasswordHash.hashPassword(password), email);
-        } else {
-            System.out.println("Choose a role: 1 for Teacher, 2 for Student.");
-            int role = scanner.nextInt();
-            scanner.nextLine();  // Consume newline
+    System.out.println("First user detected. Defaulting role to Admin.");
+    newUser = new Admin(firstName, middleName, lastName, username, PasswordHash.hashPassword(password), email);
+} else {
+    System.out.println("Choose a role: 1 for Teacher, 2 for Student (required). Leave blank if not applicable.");
+    
+    String roleInput = scanner.nextLine().trim();
+    
+    // If roleInput is empty and it's not the first user, keep prompting
+    while (roleInput.isEmpty()) {
+        System.out.println("A role is required. Please choose a role: 1 for Teacher, 2 for Student.");
+        roleInput = scanner.nextLine().trim();
+    }
 
-            if (role == 1) {
-                newUser = new Teacher(firstName, middleName, lastName, username, PasswordHash.hashPassword(password), email);
-            } else {
-                newUser = new Student(firstName, middleName, lastName, username, PasswordHash.hashPassword(password), email);
-            }
+    int role = Integer.parseInt(roleInput);
+
+    if (role == 1 || role == 2) {
+        // Prompt for invite code
+        System.out.print("Enter invite code: ");
+        String inviteCode = scanner.nextLine().trim();
+
+        while (inviteCode.isEmpty()) {
+            System.out.println("Invite code is required. Please enter the invite code: ");
+            inviteCode = scanner.nextLine().trim();
         }
 
+        // Assign the role based on input
+        if (role == 1) {
+            newUser = new Teacher(firstName, middleName, lastName, username, PasswordHash.hashPassword(password), email, inviteCode);
+        } else {
+            newUser = new Student(firstName, middleName, lastName, username, PasswordHash.hashPassword(password), email, inviteCode);
+        }
+    } else {
+        System.out.println("Invalid role selection. Please restart and choose a valid option.");
+        return;
+    }
+}
         // Add new user to the database
         Database.addUser(newUser);
         System.out.println("Registration successful! You can now log in.");
