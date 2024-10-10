@@ -50,7 +50,12 @@ public class EntryPage extends Application {
             Stage newUserStage = new Stage();
             newUserPage.start(newUserStage);
         });
-        btnLogin.setOnAction(e -> handleLogin());
+        btnLogin.setOnAction(e -> {
+            LoginPage loginPage = new LoginPage();
+            Stage loginStage = new Stage();
+            loginPage.start(loginStage);
+            primaryStage.close(); // Optionally close the EntryPage if you want only one window open at a time
+        });
         btnExit.setOnAction(e -> primaryStage.close());
 
         // Layout container (VBox) for the label and buttons
@@ -76,11 +81,6 @@ public class EntryPage extends Application {
         primaryStage.setTitle("CSE360 Help System - Entry Page");
         primaryStage.setScene(scene);
         primaryStage.show();
-    }
-
-    private void handleLogin() {
-        System.out.println("Redirecting to Login...");
-        // Here you can implement the login process similar to Main.java's login() method
     }
 
     public static void main(String[] args) {
