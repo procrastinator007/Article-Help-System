@@ -1,109 +1,134 @@
 package cse360;
+
 import javafx.application.Application;
-import javafx.geometry.Insets;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import java.util.ArrayList;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.util.List;
+public class DisplayDatabaseFX extends Application {
 
-public class DisplayDatabaseFX extends javafx.application.Application {
-
-    private TableView<DataModel> table;
-
-    public static void main(String[] args) {
-        launch(args);
-    }
+    private TableView<User> tableView;
+    private ObservableList<User> userObservableList;
+    private Label labelInviteCode = new Label();
 
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.setTitle("Database Viewer");
-        primaryStage.setWidth(800);
-        primaryStage.setHeight(600);
+        primaryStage.setTitle("User Database");
 
-        table = new TableView<>();
+        // Set up the TableView
+        tableView = new TableView<>();
         setupTableColumns();
-        loadDataFromDatabase();
 
-        VBox vbox = new VBox(15);
-        vbox.setPadding(new Insets(20));
-        vbox.setAlignment(Pos.CENTER);
-        vbox.setStyle("-fx-background-color: #FDF5E6;");
-        vbox.getChildren().add(table);
+        // Refresh button
+        Button btnRefresh = new Button("Refresh");
+        btnRefresh.setStyle("-fx-background-color: #FF6F61; -fx-text-fill: white; -fx-font-size: 18px;");
+        btnRefresh.setOnAction(e -> refreshUserData());
 
-        Scene scene = new Scene(vbox);
+        // Generate invite code button
+        Button btnGenerateInvite = new Button("Generate Invite Code");
+        btnGenerateInvite.setStyle("-fx-background-color: #FF6F61; -fx-text-fill: white; -fx-font-size: 18px;");
+        btnGenerateInvite.setOnAction(e -> generateInviteCode());
 
+        // Delete button
+        Button btnDelete = new Button("Delete Selected User");
+        btnDelete.setStyle("-fx-background-color: #FF6F61; -fx-text-fill: white; -fx-font-size: 18px;");
+        btnDelete.setOnAction(e -> deleteUser());
+
+        // Exit button to go back to EntryPage
+        Button btnExit = new Button("Exit");
+        btnExit.setStyle("-fx-background-color: #FF6F61; -fx-text-fill: white; -fx-font-size: 18px;");
+        btnExit.setOnAction(e -> exitToEntryPage(primaryStage));
+
+        // Layout
+        VBox layout = new VBox(20);
+        layout.setAlignment(Pos.CENTER);
+        layout.getChildren().addAll(tableView, btnRefresh, btnGenerateInvite, btnDelete, labelInviteCode, btnExit);
+
+        // Initial load of user data
+        refreshUserData();
+
+        // Set the scene and show the stage
+        Scene scene = new Scene(layout, 800, 400);
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
+    // Set up columns for the TableView
     private void setupTableColumns() {
-        TableColumn<DataModel, String> firstNameColumn = new TableColumn<>("First Name");
-        firstNameColumn.setCellValueFactory(new PropertyValueFactory<>("firstName"));
-        firstNameColumn.setMinWidth(150);
-        firstNameColumn.setStyle("-fx-background-color: #88C999; -fx-text-fill: #2F4F4F;");
+        TableColumn<User, String> firstNameCol = new TableColumn<>("First Name");
+        firstNameCol.setMinWidth(100);
+        firstNameCol.setCellValueFactory(new PropertyValueFactory<>("firstName"));
 
-        TableColumn<DataModel, String> lastNameColumn = new TableColumn<>("Last Name");
-        lastNameColumn.setCellValueFactory(new PropertyValueFactory<>("lastName"));
-        lastNameColumn.setMinWidth(150);
-        lastNameColumn.setStyle("-fx-background-color: #87CEEB; -fx-text-fill: #2F4F4F;");
+        TableColumn<User, String> middleNameCol = new TableColumn<>("Middle Name");
+        middleNameCol.setMinWidth(100);
+        middleNameCol.setCellValueFactory(new PropertyValueFactory<>("middleName"));
 
-        TableColumn<DataModel, String> roleColumn = new TableColumn<>("Role");
-        roleColumn.setCellValueFactory(new PropertyValueFactory<>("role"));
-        roleColumn.setMinWidth(150);
-        roleColumn.setStyle("-fx-background-color: #FF6F61; -fx-text-fill: #2F4F4F;");
+        TableColumn<User, String> lastNameCol = new TableColumn<>("Last Name");
+        lastNameCol.setMinWidth(100);
+        lastNameCol.setCellValueFactory(new PropertyValueFactory<>("lastName"));
 
-        TableColumn<DataModel, String> emailColumn = new TableColumn<>("Email");
-        emailColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
-        emailColumn.setMinWidth(200);
-        emailColumn.setStyle("-fx-background-color: #FFD700; -fx-text-fill: #2F4F4F;");
+        TableColumn<User, String> emailCol = new TableColumn<>("Email");
+        emailCol.setMinWidth(200);
+        emailCol.setCellValueFactory(new PropertyValueFactory<>("email"));
 
-        table.getColumns().addAll(firstNameColumn, lastNameColumn, roleColumn, emailColumn);
+        TableColumn<User, String> usernameCol = new TableColumn<>("Username");
+        usernameCol.setMinWidth(150);
+        usernameCol.setCellValueFactory(new PropertyValueFactory<>("username"));
+
+        TableColumn<User, String> roleCol = new TableColumn<>("Role");
+        roleCol.setMinWidth(100);
+        roleCol.setCellValueFactory(new PropertyValueFactory<>("role"));
+
+        tableView.getColumns().addAll(firstNameCol, middleNameCol, lastNameCol, emailCol, usernameCol, roleCol);
     }
 
-    private void loadDataFromDatabase() {
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("/mnt/data/database.ser"))) {
-            List<DataModel> dataList = (List<DataModel>) ois.readObject();
-            table.getItems().addAll(dataList);
-        } catch (IOException | ClassNotFoundException e) {
+    // Method to refresh the user data in the TableView
+    private void refreshUserData() {
+        ArrayList<User> users = Database.getAllUsers();
+        userObservableList = FXCollections.observableArrayList(users);
+        tableView.setItems(userObservableList);
+    }
+
+    // Method to generate the invite code and display it
+    private void generateInviteCode() {
+        String inviteCode = Database.generateInviteCode();
+        labelInviteCode.setText("Invite Code: " + inviteCode);
+    }
+
+    // Method to delete the selected user
+    private void deleteUser() {
+        User selectedUser = tableView.getSelectionModel().getSelectedItem();
+        if (selectedUser != null) {
+            Database.deleteUser(selectedUser.getUsername());
+            refreshUserData(); // Refresh the table to show the updated user list
+        } else {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("No Selection");
+            alert.setHeaderText(null);
+            alert.setContentText("Please select a user to delete.");
+            alert.showAndWait();
+        }
+    }
+
+    // Method to exit to the EntryPage without altering the database
+    private void exitToEntryPage(Stage currentStage) {
+        try {
+            EntryPage entryPage = new EntryPage();
+            Stage entryStage = new Stage();
+            entryPage.start(entryStage);
+            currentStage.close(); // Close the current stage
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-}
 
-class DataModel implements java.io.Serializable {
-    private String firstName;
-    private String lastName;
-    private String role;
-    private String email;
-
-    public DataModel(String firstName, String lastName, String role, String email) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.role = role;
-        this.email = email;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public String getEmail() {
-        return email;
+    public static void main(String[] args) {
+        launch(args);
     }
 }
