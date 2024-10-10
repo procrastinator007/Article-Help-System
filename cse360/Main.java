@@ -1,4 +1,5 @@
 package cse360;
+import java.io.File;
 import java.util.Scanner;
 
 public class Main {
@@ -24,15 +25,33 @@ public class Main {
                     login(scanner);
                     break;
                 case 3:
+                    handleExit();
                     running = false;
-                    System.out.println("Thank you for using the CSE360 System. Goodbye!");
-                    break;
                 default:
                     System.out.println("Invalid choice. Please choose 1, 2, or 3.");
             }
         }
         scanner.close();
     }
+
+     // Handle exiting and cleanup of temporary files
+    private static void handleExit() {
+        System.out.println("Exiting program...");
+
+        // Remove temporary files
+        File[] tempFiles = new File(".").listFiles((dir, name) -> name.endsWith(".tmp") || name.endsWith(".log"));
+        if (tempFiles != null) {
+            for (File tempFile : tempFiles) {
+                if (tempFile.delete()) {
+                    System.out.println("Deleted temporary file: " + tempFile.getName());
+                }
+            }
+        }
+
+        System.out.println("All temporary files deleted. Database is permanent.");
+        System.exit(0);  // Exit the program
+    }
+
 
     private static void register(Scanner scanner) {
         String firstName, middleName, lastName, username, email, password;
@@ -71,7 +90,7 @@ public class Main {
         while (true) {
             System.out.println("Enter a username (must end with @asu.edu):");
             username = scanner.nextLine();
-            if (username.length() <= 15) break;
+            if (username.length() <= 15 ) break;
             System.out.println("Invalid username. It must be less than 15 characters and end with @asu.edu.");
         }
 

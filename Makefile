@@ -1,17 +1,28 @@
 
-.PHONY: all clean run
+# Makefile to compile and run the Java project
 
-# Specify the package directory
-PACKAGE_DIR = cse360
+JAVAC = javac
+JAVA = java
+SRC = cse360/*.java
+MAIN = cse360.Main
 
-# Compile all Java files in the cse360 package
-all: 
-	javac $(PACKAGE_DIR)/*.java
+# Default rule to compile the code
+all:
+	$(JAVAC) $(SRC)
 
-# Run the Main class
-run: all
-	java $(PACKAGE_DIR).Main
+# Run the main class
+run:
+	$(JAVA) $(MAIN)
 
-# Clean up the class files
+# Clean all temporary files except the database file
 clean:
-	rm -f $(PACKAGE_DIR)/*.class
+	find . -name "*.class" -delete
+	rm -f *.tmp
+	rm -f *.log
+
+# Clean all files, including the database
+clean-all: clean
+	rm -f database.ser
+
+# Phony targets to avoid conflicts with file names
+.PHONY: all run clean clean-all

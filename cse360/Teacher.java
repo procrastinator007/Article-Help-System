@@ -1,4 +1,6 @@
+
 package cse360;
+
 public class Teacher extends User {
     private String[] classes;  // Add classes information
 
