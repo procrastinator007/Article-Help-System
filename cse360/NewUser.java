@@ -19,7 +19,7 @@ import javafx.geometry.Rectangle2D;
 import java.util.ArrayList;
 
 public class NewUser extends Application {
-    // Attributes
+    // Attributes for various UI components
     private Label label_ApplicationTitle = new Label("New User Registration");
     private Label label_firstName = new Label("Enter your First Name:");
     private TextField text_firstName = new TextField();
@@ -46,34 +46,34 @@ public class NewUser extends Application {
     public void start(Stage primaryStage) {
         primaryStage.setTitle("New User Registration");
 
-        // Create a root layout
+        // Create a VBox for the central layout with spacing and alignment
         VBox layoutCenter = new VBox(15);
         layoutCenter.setAlignment(Pos.TOP_CENTER);
         layoutCenter.setPadding(new Insets(50, 0, 0, 0));
         layoutCenter.setBackground(new Background(new BackgroundFill(Color.web("#FDF5E6"), CornerRadii.EMPTY, null))); // Light Beige background
 
-        // Set up the UI elements
+        // Set up the UI elements (labels, text fields, etc.)
         setupUIElements();
 
-        // Add all elements to the layout
+        // Add all elements to the central layout
         layoutCenter.getChildren().addAll(label_ApplicationTitle, label_firstName, text_firstName, label_middleName, text_middleName,
                 label_lastName, text_lastName, label_email, text_email, label_Username, text_Username,
                 label_Password, text_Password, label_ConfirmPassword, text_ConfirmPassword,
                 label_Role, comboBox_Role, label_InviteCode, text_InviteCode, label_errMessage);
 
-        // Align the sign-up button at the bottom right
+        // Create a HBox for the bottom layout to hold the sign-up button
         HBox layoutBottomLeft = new HBox(10);
         layoutBottomLeft.setAlignment(Pos.BOTTOM_RIGHT);
         layoutBottomLeft.setPadding(new Insets(20));
         layoutBottomLeft.setBackground(new Background(new BackgroundFill(Color.web("#FDF5E6"), CornerRadii.EMPTY, null))); // Light Beige background
         layoutBottomLeft.getChildren().add(btn_SignUp);
 
-        // Create a BorderPane to organize layout positions
+        // Create a BorderPane to position the layouts centrally and at the bottom
         BorderPane borderPane = new BorderPane();
         borderPane.setCenter(layoutCenter);
         borderPane.setBottom(layoutBottomLeft);
 
-        // Set up the scene and make the window full size
+        // Set up the scene with full screen size
         Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
         Scene theScene = new Scene(borderPane, screenBounds.getWidth(), screenBounds.getHeight());
         primaryStage.setX(screenBounds.getMinX());
@@ -83,15 +83,16 @@ public class NewUser extends Application {
         primaryStage.setScene(theScene);
         primaryStage.show();
 
-        // Set button action
+        // Set the action for the sign-up button
         btn_SignUp.setOnAction(e -> handleSignUp(primaryStage));
     }
 
-    // Setup UI elements
+    // Method to set up UI elements like labels, text fields, and buttons
     private void setupUIElements() {
         label_ApplicationTitle.setFont(Font.font("Arial", 30));
         label_ApplicationTitle.setTextFill(Color.web("#2F4F4F")); // Deep Navy text color
 
+        // Set up labels and text fields for each input field
         setupLabelAndTextField(label_firstName, text_firstName);
         setupLabelAndTextField(label_middleName, text_middleName);
         setupLabelAndTextField(label_lastName, text_lastName);
@@ -101,22 +102,25 @@ public class NewUser extends Application {
         setupLabelAndTextField(label_ConfirmPassword, text_ConfirmPassword);
         setupLabelAndTextField(label_InviteCode, text_InviteCode);
 
+        // Configure the role selection combo box
         label_Role.setFont(Font.font("Arial", 20));
         label_Role.setTextFill(Color.web("#2F4F4F"));
         comboBox_Role.getItems().addAll("Admin", "Teacher", "Student");
         comboBox_Role.setMaxWidth(400);
         comboBox_Role.setPrefHeight(30);
 
+        // Configure the sign-up button style and dimensions
         btn_SignUp.setFont(Font.font("Arial", 18));
         btn_SignUp.setStyle("-fx-background-color: #FF6F61; -fx-text-fill: white;"); // Coral button color
         btn_SignUp.setPrefWidth(250);
         btn_SignUp.setPrefHeight(40);
 
+        // Set the error message label properties
         label_errMessage.setFont(Font.font("Arial", 15));
-        label_errMessage.setTextFill(Color.web("#FF6F61")); // Coral for error messages
+        label_errMessage.setTextFill(Color.web("#FF6F61")); // Coral color for error messages
     }
 
-    // Setup individual label and text fields
+    // Method to set up individual labels and text fields for uniform appearance
     private void setupLabelAndTextField(Label label, TextField textField) {
         label.setFont(Font.font("Arial", 20));
         label.setTextFill(Color.web("#2F4F4F"));
@@ -124,7 +128,7 @@ public class NewUser extends Application {
         textField.setMaxWidth(400);
     }
 
-    // Handle the sign-up process
+    // Method to handle the sign-up process
     private void handleSignUp(Stage currentStage) {
         String firstName = text_firstName.getText();
         String middleName = text_middleName.getText();
@@ -138,26 +142,27 @@ public class NewUser extends Application {
 
         StringBuilder errorMessage = new StringBuilder();
 
-        // Validate user input
+        // Validate user input and collect any errors
         validateUserInput(firstName, lastName, email, username, password, confirmPassword, selectedRole, inviteCode, errorMessage);
 
-        // If there are errors, display them
+        // If there are errors, display them; otherwise, proceed with registration
         if (errorMessage.length() > 0) {
             label_errMessage.setText(errorMessage.toString());
         } else {
             label_errMessage.setTextFill(Color.GREEN);
             label_errMessage.setText("Sign Up successful!");
 
-            // Create user and add to database
+            // Create a new user and add to the database
             User user = new User(firstName, middleName, lastName, email, username, password, selectedRole);
-            Database.addUser(user);  // Add the user to the database
-            openEntryPage(currentStage); // Open EntryPage when the user is registered
+            Database.addUser(user);  // Add user to the database
+            openEntryPage(currentStage); // Proceed to the EntryPage upon successful registration
         }
     }
 
-    // Validate user input fields
+    // Method to validate user input fields
     private void validateUserInput(String firstName, String lastName, String email, String username, String password, String confirmPassword,
                                    String selectedRole, String inviteCode, StringBuilder errorMessage) {
+        // Check each field for validity and append errors if found
         if (firstName.isEmpty() || firstName.length() >= 15) errorMessage.append("*First Name must be less than 15 characters.\n");
         if (!text_middleName.getText().isEmpty() && text_middleName.getText().length() >= 15) {
             errorMessage.append("*Middle Name must be less than 15 characters if provided.\n");
@@ -170,7 +175,7 @@ public class NewUser extends Application {
         if (!password.equals(confirmPassword)) errorMessage.append("*Passwords do not match.\n");
         if (selectedRole == null) errorMessage.append("*Please select a role.\n");
 
-        // Check if the admin role already exists
+        // Check if an admin already exists in the database
         if ("Admin".equals(selectedRole)) {
             ArrayList<User> users = Database.getAllUsers();
             for (User user : users) {
@@ -181,7 +186,7 @@ public class NewUser extends Application {
             }
         }
 
-        // Check invite code for Teacher or Student
+        // Validate the invite code for Teacher or Student roles
         if ("Teacher".equals(selectedRole) || "Student".equals(selectedRole)) {
             if (inviteCode.isEmpty()) {
                 errorMessage.append("*Class/Invite code is required for registering as a Teacher or Student.\n");
@@ -191,7 +196,7 @@ public class NewUser extends Application {
         }
     }
 
-    // Open EntryPage and close current stage
+    // Method to open the EntryPage and close the current stage
     private void openEntryPage(Stage currentStage) {
         try {
             EntryPage entryPage = new EntryPage();
@@ -199,10 +204,11 @@ public class NewUser extends Application {
             entryPage.start(entryStage);
             currentStage.close(); // Close the current stage
         } catch (Exception e) {
-            e.printStackTrace();
+            e.printStackTrace(); // Print stack trace if an error occurs
         }
     }
 
+    // Main method to launch the application
     public static void main(String[] args) {
         launch(args);
     }
