@@ -1,80 +1,20 @@
-
 package cse360;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class Database {
     private static final String DATA_FILE = "database.ser";
-    private static ArrayList<Admin> admins = new ArrayList<>();
-    private static ArrayList<Teacher> teachers = new ArrayList<>();
-    private static ArrayList<Student> students = new ArrayList<>();
+    private static ArrayList<User> users = new ArrayList<>();
+    private static String inviteCode;
 
     static {
         // Load data from file at the start
         loadData();
     }
 
-    // Get all users for Admin to view
-    public static ArrayList<User> getAllUsers() {
-        ArrayList<User> allUsers = new ArrayList<>();
-        allUsers.addAll(admins);
-        allUsers.addAll(teachers);
-        allUsers.addAll(students);
-        return allUsers;
-    }
-
-    // Check if the database is empty
-    public static boolean isEmpty() {
-        return admins.isEmpty() && teachers.isEmpty() && students.isEmpty();
-    }
-
-    // Add user to the correct role-based database
-    public static void addUser(User user) {
-        if (user instanceof Admin) {
-            admins.add((Admin) user);
-        } else if (user instanceof Teacher) {
-            teachers.add((Teacher) user);
-        } else if (user instanceof Student) {
-            students.add((Student) user);
-        }
-        saveData();  // Save data after every update
-    }
-
-    // Delete user
-    public static void deleteUser(String username) {
-        admins.removeIf(admin -> admin.getUsername().equals(username));
-        teachers.removeIf(teacher -> teacher.getUsername().equals(username));
-        students.removeIf(student -> student.getUsername().equals(username));
-        saveData();  // Save data after every update
-    }
-
-    // Get user by username for login
-    public static User getUser(String username) {
-        for (Admin admin : admins) {
-            if (admin.getUsername().equals(username)) return admin;
-        }
-        for (Teacher teacher : teachers) {
-            if (teacher.getUsername().equals(username)) return teacher;
-        }
-        for (Student student : students) {
-            if (student.getUsername().equals(username)) return student;
-        }
-        return null;
-    }
-
-    // Save data to file
-    private static void saveData() {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(DATA_FILE))) {
-            oos.writeObject(admins);
-            oos.writeObject(teachers);
-            oos.writeObject(students);
-        } catch (IOException e) {
-            System.err.println("Error saving data: " + e.getMessage());
-        }
-    }
-
-    // Load data from file
+    // Load users and invite code from the serialized file
     private static void loadData() {
         File file = new File(DATA_FILE);
         if (!file.exists() || file.length() == 0) {
@@ -84,11 +24,69 @@ public class Database {
         }
 
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            admins = (ArrayList<Admin>) ois.readObject();
-            teachers = (ArrayList<Teacher>) ois.readObject();
-            students = (ArrayList<Student>) ois.readObject();
+            users = (ArrayList<User>) ois.readObject();
+            inviteCode = (String) ois.readObject();
         } catch (IOException | ClassNotFoundException e) {
             System.err.println("Error loading data: " + e.getMessage());
         }
+    }
+
+    // Save users and invite code to the serialized file
+    private static void saveData() {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(DATA_FILE))) {
+            oos.writeObject(users);
+            oos.writeObject(inviteCode);
+        } catch (IOException e) {
+            System.err.println("Error saving data: " + e.getMessage());
+        }
+    }
+
+    // Add a new user to the database
+    public static void addUser(User user) {
+        users.add(user);
+        saveData();  // Save data after adding a new user
+    }
+
+    // Delete a user from the database
+    public static void deleteUser(String username) {
+        users.removeIf(user -> user.getUsername().equals(username));
+        saveData();  // Save data after deleting the user
+    }
+
+    // Get user by username for login validation
+    public static User getUser(String username) {
+        for (User user : users) {
+            if (user.getUsername().equals(username)) {
+                return user;
+            }
+        }
+        return null;  // Return null if user not found
+    }
+
+    // Method to get all users (useful for admin viewing purposes)
+    public static ArrayList<User> getAllUsers() {
+        return new ArrayList<>(users);
+    }
+
+    // Generate a one-time invite code
+    public static String generateInviteCode() {
+        inviteCode = UUID.randomUUID().toString();
+        saveData();  // Save the new invite code
+        return inviteCode;
+    }
+
+    // Validate and consume the invite code
+    public static boolean validateInviteCode(String code) {
+        if (inviteCode != null && inviteCode.equals(code)) {
+            inviteCode = null;  // Consume the code
+            saveData();  // Save the change
+            return true;
+        }
+        return false;
+    }
+
+    // Check if the database is empty
+    public static boolean isEmpty() {
+        return users.isEmpty();
     }
 }
