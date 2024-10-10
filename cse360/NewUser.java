@@ -3,9 +3,7 @@ package cse360;
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
@@ -13,13 +11,12 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.Screen;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Button;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
 import javafx.geometry.Insets;
+import javafx.geometry.Rectangle2D;
+import java.util.ArrayList;
 
 public class NewUser extends Application {
     // Attributes
@@ -38,8 +35,8 @@ public class NewUser extends Application {
     private PasswordField text_Password = new PasswordField();
     private Label label_ConfirmPassword = new Label("Confirm your Password:");
     private PasswordField text_ConfirmPassword = new PasswordField();
-    private Label label_classCode = new Label("Enter Class Code:");
-    private TextField text_classCode = new TextField();
+    private Label label_InviteCode = new Label("Enter Class/Invite Code:");
+    private TextField text_InviteCode = new TextField();
     private Label label_Role = new Label("Select your role:");
     private ComboBox<String> comboBox_Role = new ComboBox<>();
     private Button btn_SignUp = new Button("Sign Up");
@@ -56,70 +53,15 @@ public class NewUser extends Application {
         layoutCenter.setBackground(new Background(new BackgroundFill(Color.web("#FDF5E6"), CornerRadii.EMPTY, null))); // Light Beige background
 
         // Set up the UI elements
-        label_ApplicationTitle.setFont(Font.font("Arial", 30));
-        label_ApplicationTitle.setTextFill(Color.web("#2F4F4F")); // Deep Navy text color
-        label_firstName.setFont(Font.font("Arial", 20));
-        label_firstName.setTextFill(Color.web("#2F4F4F"));
-        text_firstName.setFont(Font.font("Arial", 18));
-        text_firstName.setMaxWidth(400);
-
-        label_middleName.setFont(Font.font("Arial", 20));
-        label_middleName.setTextFill(Color.web("#2F4F4F"));
-        text_middleName.setFont(Font.font("Arial", 18));
-        text_middleName.setMaxWidth(400);
-
-        label_lastName.setFont(Font.font("Arial", 20));
-        label_lastName.setTextFill(Color.web("#2F4F4F"));
-        text_lastName.setFont(Font.font("Arial", 18));
-        text_lastName.setMaxWidth(400);
-
-        label_email.setFont(Font.font("Arial", 20));
-        label_email.setTextFill(Color.web("#2F4F4F"));
-        text_email.setFont(Font.font("Arial", 18));
-        text_email.setMaxWidth(400);
-
-        label_Username.setFont(Font.font("Arial", 20));
-        label_Username.setTextFill(Color.web("#2F4F4F"));
-        text_Username.setFont(Font.font("Arial", 18));
-        text_Username.setMaxWidth(400);
-
-        label_Password.setFont(Font.font("Arial", 20));
-        label_Password.setTextFill(Color.web("#2F4F4F"));
-        text_Password.setFont(Font.font("Arial", 18));
-        text_Password.setMaxWidth(400);
-
-        label_ConfirmPassword.setFont(Font.font("Arial", 20));
-        label_ConfirmPassword.setTextFill(Color.web("#2F4F4F"));
-        text_ConfirmPassword.setFont(Font.font("Arial", 18));
-        text_ConfirmPassword.setMaxWidth(400);
-
-        label_classCode.setFont(Font.font("Arial", 20));
-        label_classCode.setTextFill(Color.web("#2F4F4F"));
-        text_classCode.setFont(Font.font("Arial", 18));
-        text_classCode.setMaxWidth(400);
-
-        label_Role.setFont(Font.font("Arial", 20));
-        label_Role.setTextFill(Color.web("#2F4F4F"));
-        comboBox_Role.getItems().addAll("Student", "Instructor");
-        comboBox_Role.setMaxWidth(400);
-        comboBox_Role.setPrefHeight(30);
-
-        btn_SignUp.setFont(Font.font("Arial", 18));
-        btn_SignUp.setStyle("-fx-background-color: #FF6F61; -fx-text-fill: white;"); // Coral button color
-        btn_SignUp.setOnAction(e -> handleSignUp());
-        btn_SignUp.setPrefWidth(250);
-        btn_SignUp.setPrefHeight(40);
-
-        label_errMessage.setFont(Font.font("Arial", 15));
-        label_errMessage.setTextFill(Color.web("#FF6F61")); // Coral for error messages
+        setupUIElements();
 
         // Add all elements to the layout
         layoutCenter.getChildren().addAll(label_ApplicationTitle, label_firstName, text_firstName, label_middleName, text_middleName,
                 label_lastName, text_lastName, label_email, text_email, label_Username, text_Username,
-                label_Password, text_Password, label_ConfirmPassword, text_ConfirmPassword, label_classCode, text_classCode,
-                label_Role, comboBox_Role, label_errMessage);
+                label_Password, text_Password, label_ConfirmPassword, text_ConfirmPassword,
+                label_Role, comboBox_Role, label_InviteCode, text_InviteCode, label_errMessage);
 
-        // Align the sign-up button at the bottom left
+        // Align the sign-up button at the bottom right
         HBox layoutBottomLeft = new HBox(10);
         layoutBottomLeft.setAlignment(Pos.BOTTOM_RIGHT);
         layoutBottomLeft.setPadding(new Insets(20));
@@ -140,10 +82,50 @@ public class NewUser extends Application {
         primaryStage.setHeight(screenBounds.getHeight());
         primaryStage.setScene(theScene);
         primaryStage.show();
+
+        // Set button action
+        btn_SignUp.setOnAction(e -> handleSignUp(primaryStage));
+    }
+
+    // Setup UI elements
+    private void setupUIElements() {
+        label_ApplicationTitle.setFont(Font.font("Arial", 30));
+        label_ApplicationTitle.setTextFill(Color.web("#2F4F4F")); // Deep Navy text color
+
+        setupLabelAndTextField(label_firstName, text_firstName);
+        setupLabelAndTextField(label_middleName, text_middleName);
+        setupLabelAndTextField(label_lastName, text_lastName);
+        setupLabelAndTextField(label_email, text_email);
+        setupLabelAndTextField(label_Username, text_Username);
+        setupLabelAndTextField(label_Password, text_Password);
+        setupLabelAndTextField(label_ConfirmPassword, text_ConfirmPassword);
+        setupLabelAndTextField(label_InviteCode, text_InviteCode);
+
+        label_Role.setFont(Font.font("Arial", 20));
+        label_Role.setTextFill(Color.web("#2F4F4F"));
+        comboBox_Role.getItems().addAll("Admin", "Teacher", "Student");
+        comboBox_Role.setMaxWidth(400);
+        comboBox_Role.setPrefHeight(30);
+
+        btn_SignUp.setFont(Font.font("Arial", 18));
+        btn_SignUp.setStyle("-fx-background-color: #FF6F61; -fx-text-fill: white;"); // Coral button color
+        btn_SignUp.setPrefWidth(250);
+        btn_SignUp.setPrefHeight(40);
+
+        label_errMessage.setFont(Font.font("Arial", 15));
+        label_errMessage.setTextFill(Color.web("#FF6F61")); // Coral for error messages
+    }
+
+    // Setup individual label and text fields
+    private void setupLabelAndTextField(Label label, TextField textField) {
+        label.setFont(Font.font("Arial", 20));
+        label.setTextFill(Color.web("#2F4F4F"));
+        textField.setFont(Font.font("Arial", 18));
+        textField.setMaxWidth(400);
     }
 
     // Handle the sign-up process
-    private void handleSignUp() {
+    private void handleSignUp(Stage currentStage) {
         String firstName = text_firstName.getText();
         String middleName = text_middleName.getText();
         String lastName = text_lastName.getText();
@@ -152,38 +134,12 @@ public class NewUser extends Application {
         String password = text_Password.getText();
         String confirmPassword = text_ConfirmPassword.getText();
         String selectedRole = comboBox_Role.getValue();
-        String classCode = text_classCode.getText();
+        String inviteCode = text_InviteCode.getText();
 
         StringBuilder errorMessage = new StringBuilder();
 
         // Validate user input
-        if (firstName.isEmpty()) {
-            errorMessage.append("*First Name is missing.\n");
-        }
-        if (lastName.isEmpty()) {
-            errorMessage.append("*Last Name is missing.\n");
-        }
-        if (email.isEmpty()) {
-            errorMessage.append("*Email is missing.\n");
-        }
-        if (username.isEmpty()) {
-            errorMessage.append("*Username is missing.\n");
-        }
-        if (password.isEmpty()) {
-            errorMessage.append("*Password is missing.\n");
-        }
-        if (confirmPassword.isEmpty()) {
-            errorMessage.append("*Confirm Password is missing.\n");
-        }
-        if (selectedRole == null) {
-            errorMessage.append("*Please select a role.\n");
-        }
-        if (selectedRole != null && selectedRole.equals("Student") && classCode.isEmpty()) {
-            errorMessage.append("*Class Code is required.\n");
-        }
-        if (!password.equals(confirmPassword)) {
-            errorMessage.append("*Passwords do not match.\n");
-        }
+        validateUserInput(firstName, lastName, email, username, password, confirmPassword, selectedRole, inviteCode, errorMessage);
 
         // If there are errors, display them
         if (errorMessage.length() > 0) {
@@ -191,6 +147,59 @@ public class NewUser extends Application {
         } else {
             label_errMessage.setTextFill(Color.GREEN);
             label_errMessage.setText("Sign Up successful!");
+
+            // Create user and add to database
+            User user = new User(firstName, middleName, lastName, email, username, password, selectedRole);
+            Database.addUser(user);  // Add the user to the database
+            openEntryPage(currentStage); // Open EntryPage when the user is registered
+        }
+    }
+
+    // Validate user input fields
+    private void validateUserInput(String firstName, String lastName, String email, String username, String password, String confirmPassword,
+                                   String selectedRole, String inviteCode, StringBuilder errorMessage) {
+        if (firstName.isEmpty() || firstName.length() >= 15) errorMessage.append("*First Name must be less than 15 characters.\n");
+        if (!text_middleName.getText().isEmpty() && text_middleName.getText().length() >= 15) {
+            errorMessage.append("*Middle Name must be less than 15 characters if provided.\n");
+        }
+        if (lastName.isEmpty() || lastName.length() >= 15) errorMessage.append("*Last Name must be less than 15 characters.\n");
+        if (email.isEmpty() || !email.endsWith("@asu.edu")) errorMessage.append("*Email must end with @asu.edu.\n");
+        if (username.isEmpty()) errorMessage.append("*Username is missing.\n");
+        if (password.isEmpty()) errorMessage.append("*Password is missing.\n");
+        if (confirmPassword.isEmpty()) errorMessage.append("*Confirm Password is missing.\n");
+        if (!password.equals(confirmPassword)) errorMessage.append("*Passwords do not match.\n");
+        if (selectedRole == null) errorMessage.append("*Please select a role.\n");
+
+        // Check if the admin role already exists
+        if ("Admin".equals(selectedRole)) {
+            ArrayList<User> users = Database.getAllUsers();
+            for (User user : users) {
+                if ("Admin".equals(user.getRole())) {
+                    errorMessage.append("*An admin already exists. Only one admin can be registered.\n");
+                    break;
+                }
+            }
+        }
+
+        // Check invite code for Teacher or Student
+        if ("Teacher".equals(selectedRole) || "Student".equals(selectedRole)) {
+            if (inviteCode.isEmpty()) {
+                errorMessage.append("*Class/Invite code is required for registering as a Teacher or Student.\n");
+            } else if (!Database.validateInviteCode(inviteCode)) {
+                errorMessage.append("*Invalid or expired class/invite code.\n");
+            }
+        }
+    }
+
+    // Open EntryPage and close current stage
+    private void openEntryPage(Stage currentStage) {
+        try {
+            EntryPage entryPage = new EntryPage();
+            Stage entryStage = new Stage();
+            entryPage.start(entryStage);
+            currentStage.close(); // Close the current stage
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
