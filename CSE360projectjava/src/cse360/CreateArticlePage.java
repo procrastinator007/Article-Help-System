@@ -54,6 +54,13 @@ public class CreateArticlePage extends Application {
                 showAlert("Please select an article level.");
                 return;
             }
+            
+         // Check for duplicate title before saving
+            if (databaseHandler.getArticleByTitle(title) != null) {
+                showAlert("An article with this title already exists.");
+                return;
+            }
+
 
             Article article = new Article(title, author, articleAbstract, keywords, body, references, level);
             databaseHandler.saveArticle(article);

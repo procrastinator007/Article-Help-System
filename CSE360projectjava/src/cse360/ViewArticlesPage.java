@@ -68,8 +68,15 @@ public class ViewArticlesPage {
         btnDelete.setOnAction(e -> {
             String selectedTitle = articleList.getSelectionModel().getSelectedItem();
             if (selectedTitle != null) {
-                articleDatabaseHandler.deleteArticle(selectedTitle); // Delete from database
-                updateArticleList(searchField.getText().trim()); // Refresh list based on current search/filter
+                // Retrieve the article object using the title
+                Article article = articleDatabaseHandler.getArticleByTitle(selectedTitle.replace(" (Hidden)", ""));
+                if (article != null) {
+                    // Delete the article using its uid
+                    articleDatabaseHandler.deleteArticle(article.getUid());
+                    updateArticleList(searchField.getText().trim()); // Refresh list based on current search/filter
+                } else {
+                    showAlert("Error", "Unable to find the article for deletion.");
+                }
             } else {
                 showAlert("No Selection", "Please select an article to delete.");
             }
