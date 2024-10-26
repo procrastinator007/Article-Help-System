@@ -2,6 +2,7 @@ package cse360;
 
 import javafx.application.Application;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
@@ -10,75 +11,96 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 public class LoginPage extends Application {
-    // Text field for entering username
-    private TextField textUsername = new TextField();
-    // Password field for entering password
-    private PasswordField textPassword = new PasswordField();
-    // Label to display login messages
-    private Label labelMessage = new Label("");
+    private maincontroller controller;
+    private TextField textUsername = new TextField(); // Text field for entering username
+    private PasswordField textPassword = new PasswordField(); // Password field for entering password
+    private ComboBox<String> comboBoxUserType = new ComboBox<>(); // ComboBox for selecting user type
+    private Label labelMessage = new Label(""); // Label to display login messages
+
+    // Constructor that accepts MainController for navigation
+    public LoginPage(maincontroller controller) {
+        this.controller = controller;
+    }
 
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Login Page");
 
-        // Title label for the login page
-        Label labelTitle = new Label("Login");
-        labelTitle.setFont(new Font("Arial", 24)); // Set font size and style
-        labelTitle.setTextFill(Color.web("#2F4F4F")); // Set color to deep navy
+        // Create the scene using getPage() and set it on the primary stage
+        Scene scene = new Scene(getPage(), 1024, 768); // Updated size for a larger view
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
 
-        // Labels for username and password fields
+    // Method to construct and return the main layout for LoginPage
+    public Parent getPage() {
+        // Clear existing items to prevent duplication
+        comboBoxUserType.getItems().clear();
+        comboBoxUserType.getItems().addAll("Admin", "Teacher", "Student");
+
+        // Rest of your UI setup code remains the same
+        Label labelTitle = new Label("Login");
+        labelTitle.setFont(new Font("Arial", 32));
+        labelTitle.setTextFill(Color.web("#2F4F4F"));
+
         Label labelUsername = new Label("Username:");
+        labelUsername.setFont(new Font("Arial", 20));
         Label labelPassword = new Label("Password:");
-        
-        // Login button with style settings
+        labelPassword.setFont(new Font("Arial", 20));
+
+        Label labelUserType = new Label("Select User Type:");
+        labelUserType.setFont(new Font("Arial", 20));
+
+        textUsername.setPrefWidth(400);
+        textUsername.setFont(new Font("Arial", 18));
+        textPassword.setPrefWidth(400);
+        textPassword.setFont(new Font("Arial", 18));
+
         Button btnLogin = new Button("Login");
         btnLogin.setStyle("-fx-background-color: #FF6F61; -fx-text-fill: white; -fx-font-size: 18px; -fx-font-family: Arial;");
-        btnLogin.setOnAction(e -> handleLogin(primaryStage)); // Set login action
+        btnLogin.setPrefWidth(200);
+        btnLogin.setPrefHeight(50);
+        btnLogin.setOnAction(e -> handleLogin());
 
-        // Layout setup using VBox for vertical arrangement with spacing
-        VBox layout = new VBox(15);
-        layout.setAlignment(Pos.CENTER); // Center align elements
-        // Add all components to the layout
-        layout.getChildren().addAll(labelTitle, labelUsername, textUsername, labelPassword, textPassword, btnLogin, labelMessage);
-        
-        // Create the scene with the layout and set dimensions
-        Scene scene = new Scene(layout, 400, 300);
-        primaryStage.setScene(scene);
-        primaryStage.show(); // Display the stage
+        labelMessage.setFont(new Font("Arial", 16));
+
+        VBox layout = new VBox(20);
+        layout.setAlignment(Pos.CENTER);
+        layout.setPrefWidth(500);
+        layout.setPrefHeight(600);
+        layout.setStyle("-fx-padding: 50; -fx-background-color: #FDF5E6;");
+
+        layout.getChildren().addAll(labelTitle, labelUserType, comboBoxUserType, labelUsername, textUsername, labelPassword, textPassword, btnLogin, labelMessage);
+
+        return layout;
     }
 
     // Method to handle the login logic
-    private void handleLogin(Stage currentStage) {
+    private void handleLogin() {
         String username = textUsername.getText(); // Retrieve entered username
         String password = textPassword.getText(); // Retrieve entered password
+        String selectedUserType = comboBoxUserType.getValue(); // Get selected user type
+
+        if (selectedUserType == null) {
+            labelMessage.setTextFill(Color.RED);
+            labelMessage.setText("Please select a user type."); // Error if no user type is selected
+            return;
+        }
 
         // Retrieve user from the database using the entered username
         User user = Database.getUser(username);
 
-        // Check if the user exists and if the password matches
-        if (user != null && user.getPassword().equals(password)) {
+        // Check if the user exists, if the password matches, and if the user type matches
+        if (user != null && user.getPassword().equals(password) && user.getRole().equalsIgnoreCase(selectedUserType)) {
             labelMessage.setTextFill(Color.GREEN); // Set message color to green for success
             labelMessage.setText("Login successful!"); // Set success message
-            openDisplayDatabaseFX(currentStage); // Open the next screen (DisplayDatabaseFX)
+            controller.showViewArticlesPage(); // Go to ViewArticlesPage
         } else {
             labelMessage.setTextFill(Color.RED); // Set message color to red for failure
-            labelMessage.setText("Invalid username or password."); // Set error message
+            labelMessage.setText("Invalid credentials or user type."); // Set error message
         }
     }
 
-    // Method to open DisplayDatabaseFX when login is successful
-    private void openDisplayDatabaseFX(Stage currentStage) {
-        try {
-            DisplayDatabaseFX displayDatabaseFX = new DisplayDatabaseFX();
-            Stage displayStage = new Stage();
-            displayDatabaseFX.start(displayStage); // Start the DisplayDatabaseFX stage
-            currentStage.close(); // Close the login page stage
-        } catch (Exception e) {
-            e.printStackTrace(); // Print the stack trace in case of an error
-        }
-    }
-
-    // Main method to launch the application
     public static void main(String[] args) {
         launch(args); // Launch the application
     }

@@ -3,31 +3,47 @@ package cse360;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import java.util.ArrayList;
 
 public class DisplayDatabaseFX extends Application {
-
-    // TableView to display users
+    private maincontroller controller;
     private TableView<User> tableView;
-    // ObservableList to hold users for display in the TableView
     private ObservableList<User> userObservableList;
-    // Label to display the invite code
     private Label labelInviteCode = new Label();
+
+    // Constructor that accepts MainController for navigation
+    public DisplayDatabaseFX(maincontroller controller) {
+        this.controller = controller;
+    }
 
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("User Database");
 
+        // Create the scene using getPage() and set it on the primary stage
+        Scene scene = new Scene(getPage(), 800, 400); // Default size for demonstration
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    // Method to construct and return the main layout for DisplayDatabaseFX
+    public Parent getPage() {
         // Set up the TableView and its columns
         tableView = new TableView<>();
         setupTableColumns();
-
+        
+        Button btnBack = new Button("Back");
+        btnBack.setOnAction(e -> controller.showViewArticlesPage());
+        btnBack.setStyle("-fx-background-color: #FF6F61; -fx-text-fill: white; -fx-font-size: 18px;");
+        
+        
         // Refresh button to reload the user data
         Button btnRefresh = new Button("Refresh");
         btnRefresh.setStyle("-fx-background-color: #FF6F61; -fx-text-fill: white; -fx-font-size: 18px;");
@@ -46,21 +62,17 @@ public class DisplayDatabaseFX extends Application {
         // Exit button to go back to EntryPage
         Button btnExit = new Button("Exit");
         btnExit.setStyle("-fx-background-color: #FF6F61; -fx-text-fill: white; -fx-font-size: 18px;");
-        btnExit.setOnAction(e -> exitToEntryPage(primaryStage));
+        btnExit.setOnAction(e -> controller.showEntryPage());
 
         // Layout configuration using VBox with spacing and alignment
         VBox layout = new VBox(20);
         layout.setAlignment(Pos.CENTER);
-        // Add all elements to the layout
-        layout.getChildren().addAll(tableView, btnRefresh, btnGenerateInvite, btnDelete, labelInviteCode, btnExit);
+        layout.getChildren().addAll(tableView, btnRefresh, btnGenerateInvite, btnDelete, labelInviteCode, btnBack ,btnExit);
 
         // Initial load of user data into the TableView
         refreshUserData();
 
-        // Set the scene with the layout and dimensions, and show the stage
-        Scene scene = new Scene(layout, 800, 400);
-        primaryStage.setScene(scene);
-        primaryStage.show();
+        return layout; // Return the main layout
     }
 
     // Set up columns for the TableView to display user information
@@ -135,23 +147,7 @@ public class DisplayDatabaseFX extends Application {
         }
     }
 
-    // Method to exit to the EntryPage without altering the database
-    private void exitToEntryPage(Stage currentStage) {
-        try {
-            // Create and show the EntryPage stage
-            EntryPage entryPage = new EntryPage();
-            Stage entryStage = new Stage();
-            entryPage.start(entryStage);
-            // Close the current stage
-            currentStage.close();
-        } catch (Exception e) {
-            // Print the stack trace in case of an error
-            e.printStackTrace();
-        }
-    }
-
-    // Main method to launch the application
     public static void main(String[] args) {
-        launch(args);
+        launch(args); // Launch the application
     }
 }
