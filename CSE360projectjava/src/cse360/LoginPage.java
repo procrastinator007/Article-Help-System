@@ -38,7 +38,7 @@ public class LoginPage extends Application {
         comboBoxUserType.getItems().clear();
         comboBoxUserType.getItems().addAll("Admin", "Teacher", "Student");
 
-        // Rest of your UI setup code remains the same
+        // UI elements setup
         Label labelTitle = new Label("Login");
         labelTitle.setFont(new Font("Arial", 32));
         labelTitle.setTextFill(Color.web("#2F4F4F"));
@@ -64,13 +64,22 @@ public class LoginPage extends Application {
 
         labelMessage.setFont(new Font("Arial", 16));
 
+        // Back button to return to the entry page
+        Button btnBack = new Button("Back");
+        btnBack.setStyle("-fx-background-color: #FF6F61; -fx-text-fill: white; -fx-font-size: 18px; -fx-font-family: Arial;");
+        btnBack.setPrefWidth(200);
+        btnBack.setPrefHeight(50);
+        btnBack.setOnAction(e -> controller.showEntryPage()); // Go back to the entry page when clicked
+
+        // Layout configuration
         VBox layout = new VBox(20);
         layout.setAlignment(Pos.CENTER);
         layout.setPrefWidth(500);
         layout.setPrefHeight(600);
         layout.setStyle("-fx-padding: 50; -fx-background-color: #FDF5E6;");
 
-        layout.getChildren().addAll(labelTitle, labelUserType, comboBoxUserType, labelUsername, textUsername, labelPassword, textPassword, btnLogin, labelMessage);
+        // Add all components to the layout
+        layout.getChildren().addAll(labelTitle, labelUserType, comboBoxUserType, labelUsername, textUsername, labelPassword, textPassword, btnLogin, labelMessage, btnBack);
 
         return layout;
     }
@@ -94,8 +103,15 @@ public class LoginPage extends Application {
         if (user != null && user.getPassword().equals(password) && user.getRole().equalsIgnoreCase(selectedUserType)) {
             labelMessage.setTextFill(Color.GREEN); // Set message color to green for success
             labelMessage.setText("Login successful!"); // Set success message
-            controller.showViewArticlesPage(); // Go to ViewArticlesPage
-        } else {
+         
+            if (selectedUserType.equalsIgnoreCase("Admin")) {
+                controller.showViewArticlesPage(); // Show full page for Admin
+            } else if (selectedUserType.equalsIgnoreCase("Teacher")) {
+                controller.showViewArticlesTeacherPage(); // Show restricted page for Teacher
+            } else {
+                controller.viewarticlestudent(); // Show limited view for Student
+            }
+        } else {	
             labelMessage.setTextFill(Color.RED); // Set message color to red for failure
             labelMessage.setText("Invalid credentials or user type."); // Set error message
         }

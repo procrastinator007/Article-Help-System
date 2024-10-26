@@ -10,18 +10,14 @@ import javafx.stage.Stage;
 import javafx.scene.Parent;
 
 public class CreateArticlePage extends Application {
-    private ArticleDatabaseHandler databaseHandler;
+    private ArticleDatabaseHandler databaseHandler = new ArticleDatabaseHandler();
     private maincontroller controller;
 
-    // Constructor to initialize the controller and database handler
     public CreateArticlePage(maincontroller controller) {
         this.controller = controller;
-        this.databaseHandler = new ArticleDatabaseHandler(); // Initialize database handler
     }
 
-    // Method to create the main layout for the CreateArticlePage
     public Parent getPage() {
-        // Article input fields
         TextField titleField = new TextField();
         titleField.setPromptText("Article Title");
 
@@ -32,54 +28,63 @@ public class CreateArticlePage extends Application {
         abstractField.setPromptText("Abstract");
 
         TextField keywordsField = new TextField();
-        keywordsField.setPromptText("Keywords (comma-separated)");
+        keywordsField.setPromptText("Keywords");
 
         TextArea bodyField = new TextArea();
         bodyField.setPromptText("Body");
 
         TextField referencesField = new TextField();
-        referencesField.setPromptText("References (comma-separated)");
+        referencesField.setPromptText("References");
 
-        // Save button to save the article data
+        ComboBox<String> levelComboBox = new ComboBox<>();
+        levelComboBox.getItems().addAll("Beginner", "Intermediate", "Advanced", "Expert");
+        levelComboBox.setPromptText("Select Level");
+
         Button btnSave = new Button("Save Article");
         btnSave.setOnAction(e -> {
-            // Retrieve data from fields
             String title = titleField.getText();
             String author = authorField.getText();
             String articleAbstract = abstractField.getText();
             String keywords = keywordsField.getText();
             String body = bodyField.getText();
             String references = referencesField.getText();
+            String level = levelComboBox.getValue();
 
-            // Create an article instance
-            Article article = new Article(title, author, articleAbstract, keywords, body, references);
+            if (level == null) {
+                showAlert("Please select an article level.");
+                return;
+            }
 
-            // Save the article to the database
+            Article article = new Article(title, author, articleAbstract, keywords, body, references, level);
             databaseHandler.saveArticle(article);
 
-            // Show confirmation alert
             Alert alert = new Alert(Alert.AlertType.INFORMATION, "Article saved successfully!");
             alert.showAndWait();
         });
 
-        // Back button to navigate to the ViewArticlesPage
         Button btnBack = new Button("Back");
         btnBack.setOnAction(e -> controller.showViewArticlesPage());
 
-        // Layout configuration
-        VBox layout = new VBox(10, titleField, authorField, abstractField, keywordsField, bodyField, referencesField, btnSave, btnBack);
-        layout.setPadding(new Insets(20));
+        VBox layout = new VBox(10, titleField, authorField, abstractField, keywordsField, bodyField, referencesField, levelComboBox, btnSave, btnBack);
         layout.setAlignment(Pos.CENTER);
 
         return layout;
     }
 
-    @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Create Article");
+
         Scene scene = new Scene(getPage(), 500, 600);
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+
+    private void showAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Information");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
     public static void main(String[] args) {

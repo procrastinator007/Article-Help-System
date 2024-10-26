@@ -6,7 +6,9 @@ import javafx.stage.Stage;
 
 public class maincontroller extends Application {
     private Stage primaryStage;
-    private Scene entryPageScene, loginPageScene, newUserScene, displayDatabaseScene, viewArticlesPageScene, displayUserDatabaseScene, createArticlePageScene;
+    private Scene entryPageScene, loginPageScene, newUserScene, displayDatabaseScene, 
+                  viewArticlesPageScene, viewArticlesTeacherPageScene, displayUserDatabaseScene, 
+                  createArticlePageScene, viewarticlestudentScene;
 
     @Override
     public void start(Stage primaryStage) {
@@ -15,6 +17,7 @@ public class maincontroller extends Application {
         // Initialize the first scene
         showEntryPage();
         primaryStage.setTitle("CSE360 App");
+        primaryStage.setOnCloseRequest(event -> Database.close()); // Close DB connection on app close
         primaryStage.show();
     }
 
@@ -44,6 +47,13 @@ public class maincontroller extends Application {
         primaryStage.setScene(viewArticlesPageScene);
     }
 
+    // Method to show the teacher's version of ViewArticlesPage without user database options
+    public void showViewArticlesTeacherPage() {
+        ViewArticlesTeacherPage viewArticlesTeacherPage = new ViewArticlesTeacherPage(this);
+        viewArticlesTeacherPageScene = new Scene(viewArticlesTeacherPage.getPage(), 1024, 768);
+        primaryStage.setScene(viewArticlesTeacherPageScene);
+    }
+
     public void showCreateArticlePage() {
         CreateArticlePage createArticlePage = new CreateArticlePage(this);
         createArticlePageScene = new Scene(createArticlePage.getPage(), 1024, 768);
@@ -56,8 +66,6 @@ public class maincontroller extends Application {
         primaryStage.setScene(displayUserDatabaseScene);
     }
 
-
-
     public void showNewUserPage() {
         NewUser newUserPage = new NewUser(this);
         if (newUserPage.getPage() == null) {
@@ -68,6 +76,11 @@ public class maincontroller extends Application {
         primaryStage.setScene(newUserScene);
     }
     
+    public void viewarticlestudent() {
+        viewarticlestudent viewarticlestudentPage = new viewarticlestudent(this); // Pass 'this' as the controller
+        viewarticlestudentScene = new Scene(viewarticlestudentPage.getPage(), 1024, 768);
+        primaryStage.setScene(viewarticlestudentScene);
+    }
 
     public void showDisplayDatabasePage() {
         DisplayDatabaseFX displayDatabase = new DisplayDatabaseFX(this);

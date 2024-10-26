@@ -16,7 +16,6 @@ import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
 import javafx.geometry.Insets;
-import java.util.ArrayList;
 
 public class NewUser extends Application {
     private maincontroller controller;
@@ -53,16 +52,16 @@ public class NewUser extends Application {
         primaryStage.setTitle("New User Registration");
 
         // Create the scene using getPage() and set it on the primary stage
-        Scene scene = new Scene(getPage(), 1024, 768); // Updated size for larger view
+        Scene scene = new Scene(getPage(), 1024, 768);
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
     public Parent getPage() {
-        VBox layoutCenter = new VBox(10); // Reduced spacing for more compact layout
+        VBox layoutCenter = new VBox(10);
         layoutCenter.setAlignment(Pos.TOP_CENTER);
-        layoutCenter.setPadding(new Insets(30, 0, 0, 0)); // Reduced padding to bring content higher
-        layoutCenter.setBackground(new Background(new BackgroundFill(Color.web("#FDF5E6"), CornerRadii.EMPTY, null))); // Light Beige
+        layoutCenter.setPadding(new Insets(30, 0, 0, 0));
+        layoutCenter.setBackground(new Background(new BackgroundFill(Color.web("#FDF5E6"), CornerRadii.EMPTY, null)));
 
         setupUIElements();
 
@@ -73,23 +72,34 @@ public class NewUser extends Application {
                 label_Role, comboBox_Role, label_InviteCode, text_InviteCode, label_errMessage);
 
         HBox layoutBottom = new HBox(10);
-        layoutBottom.setAlignment(Pos.BOTTOM_RIGHT);
-        layoutBottom.setPadding(new Insets(10)); // Reduced padding to save space
-        layoutBottom.setBackground(new Background(new BackgroundFill(Color.web("#FDF5E6"), CornerRadii.EMPTY, null))); 
-        layoutBottom.getChildren().add(btn_SignUp);
+        layoutBottom.setAlignment(Pos.CENTER);
+        layoutBottom.setPadding(new Insets(10));
+        layoutBottom.setBackground(new Background(new BackgroundFill(Color.web("#FDF5E6"), CornerRadii.EMPTY, null)));
+
+        // Add Back and Sign Up buttons to the bottom layout
+        Button btnBack = new Button("Back");
+        btnBack.setStyle("-fx-background-color: #FF6F61; -fx-text-fill: white;");
+        btnBack.setPrefWidth(100);
+        btnBack.setPrefHeight(40);
+        btnBack.setOnAction(e -> controller.showEntryPage());
+
+        btn_SignUp.setFont(Font.font("Arial", 16));
+        btn_SignUp.setStyle("-fx-background-color: #FF6F61; -fx-text-fill: white;");
+        btn_SignUp.setPrefWidth(200);
+        btn_SignUp.setPrefHeight(40);
+        btn_SignUp.setOnAction(e -> handleSignUp());
+
+        layoutBottom.getChildren().addAll(btnBack, btn_SignUp);
 
         BorderPane borderPane = new BorderPane();
         borderPane.setCenter(layoutCenter);
         borderPane.setBottom(layoutBottom);
 
-        btn_SignUp.setOnAction(e -> handleSignUp());
-
         return borderPane;
     }
 
-
     private void setupUIElements() {
-        label_ApplicationTitle.setFont(Font.font("Arial", 24)); // Reduced title font size for compactness
+        label_ApplicationTitle.setFont(Font.font("Arial", 24));
         label_ApplicationTitle.setTextFill(Color.web("#2F4F4F"));
 
         setupLabelAndTextField(label_firstName, text_firstName);
@@ -101,25 +111,20 @@ public class NewUser extends Application {
         setupLabelAndTextField(label_ConfirmPassword, text_ConfirmPassword);
         setupLabelAndTextField(label_InviteCode, text_InviteCode);
 
-        label_Role.setFont(Font.font("Arial", 18)); // Reduced label font size
+        label_Role.setFont(Font.font("Arial", 18));
         label_Role.setTextFill(Color.web("#2F4F4F"));
-        comboBox_Role.setMaxWidth(350); // Narrowed width to save space
+        comboBox_Role.setMaxWidth(350);
         comboBox_Role.setPrefHeight(30);
 
-        btn_SignUp.setFont(Font.font("Arial", 16)); // Reduced button font size
-        btn_SignUp.setStyle("-fx-background-color: #FF6F61; -fx-text-fill: white;");
-        btn_SignUp.setPrefWidth(200); // Narrowed button width
-        btn_SignUp.setPrefHeight(40);
-
-        label_errMessage.setFont(Font.font("Arial", 14)); // Slightly reduced font size for error messages
+        label_errMessage.setFont(Font.font("Arial", 14));
         label_errMessage.setTextFill(Color.web("#FF6F61"));
     }
 
     private void setupLabelAndTextField(Label label, TextField textField) {
-        label.setFont(Font.font("Arial", 18)); // Reduced font size for labels
+        label.setFont(Font.font("Arial", 18));
         label.setTextFill(Color.web("#2F4F4F"));
-        textField.setFont(Font.font("Arial", 16)); // Reduced font size for text fields
-        textField.setMaxWidth(350); // Reduced width for compactness
+        textField.setFont(Font.font("Arial", 16));
+        textField.setMaxWidth(350);
     }
 
     private void handleSignUp() {
@@ -144,8 +149,14 @@ public class NewUser extends Application {
             label_errMessage.setText("Sign Up successful!");
 
             User user = new User(firstName, middleName, lastName, email, username, password, selectedRole);
-            Database.addUser(user);
-            controller.showEntryPage();
+
+            // Insert user into SQL database
+            if (Database.addUserToDatabase(user)) { // Assuming this returns true on success
+                controller.showEntryPage();
+            } else {
+                label_errMessage.setTextFill(Color.RED);
+                label_errMessage.setText("Error adding user to the database.");
+            }
         }
     }
 
@@ -163,20 +174,14 @@ public class NewUser extends Application {
         if (!password.equals(confirmPassword)) errorMessage.append("*Passwords do not match.\n");
         if (selectedRole == null) errorMessage.append("*Please select a role.\n");
 
-        if ("Admin".equals(selectedRole)) {
-            ArrayList<User> users = Database.getAllUsers();
-            for (User user : users) {
-                if ("Admin".equals(user.getRole())) {
-                    errorMessage.append("*An admin already exists. Only one admin can be registered.\n");
-                    break;
-                }
-            }
+        if ("Admin".equals(selectedRole) && Database.isExistingAdmin()) { // Check if admin exists in SQL DB
+            errorMessage.append("*An admin already exists. Only one admin can be registered.\n");
         }
 
         if ("Teacher".equals(selectedRole) || "Student".equals(selectedRole)) {
             if (inviteCode.isEmpty()) {
                 errorMessage.append("*Class/Invite code is required for registering as a Teacher or Student.\n");
-            } else if (!Database.validateInviteCode(inviteCode)) {
+            } else if (!Database.validateInviteCode(inviteCode)) { // Validate invite code in SQL DB
                 errorMessage.append("*Invalid or expired class/invite code.\n");
             }
         }

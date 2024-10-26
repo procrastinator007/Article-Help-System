@@ -9,7 +9,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
 
-public class ViewArticlesPage {
+public class ViewArticlesTeacherPage {
     private maincontroller controller;
     private TextArea articleDetails = new TextArea();
     private ListView<String> articleList = new ListView<>();
@@ -17,7 +17,7 @@ public class ViewArticlesPage {
     private CheckBox showHiddenCheckBox = new CheckBox("Show Hidden Articles"); // Checkbox to toggle hidden articles
     private ArticleDatabaseHandler articleDatabaseHandler = new ArticleDatabaseHandler();
 
-    public ViewArticlesPage(maincontroller controller) {
+    public ViewArticlesTeacherPage(maincontroller controller) {
         this.controller = controller;
     }
 
@@ -75,13 +75,11 @@ public class ViewArticlesPage {
             }
         });
 
-        // Additional admin buttons
-        Button btnDisplayUsers = new Button("User Database");
-        btnDisplayUsers.setOnAction(e -> controller.showDisplayUserDatabasePage());
-
+        // Create Article button
         Button btnCreateArticle = new Button("Create Article");
         btnCreateArticle.setOnAction(e -> controller.showCreateArticlePage());
 
+        // Logout button
         Button btnLogout = new Button("Logout");
         btnLogout.setOnAction(e -> controller.logout());
 
@@ -90,7 +88,7 @@ public class ViewArticlesPage {
         btnBack.setOnAction(e -> controller.showEntryPage());
 
         // Layout configuration
-        VBox layout = new VBox(10, articleList, articleDetails, btnHideUnhide, btnDelete, btnDisplayUsers, btnCreateArticle, btnLogout, btnBack);
+        VBox layout = new VBox(10, articleList, articleDetails, btnHideUnhide, btnDelete, btnCreateArticle, btnLogout, btnBack);
         layout.setPadding(new Insets(20));
         layout.setAlignment(Pos.CENTER);
 
@@ -115,7 +113,6 @@ public class ViewArticlesPage {
             }
         }
     }
-
 
     // Method to perform the search based on the entered keyword
     private void performSearch() {

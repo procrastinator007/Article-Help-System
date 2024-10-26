@@ -10,13 +10,15 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class DisplayDatabaseFX extends Application {
     private maincontroller controller;
     private TableView<User> tableView;
     private ObservableList<User> userObservableList;
-    private Label labelInviteCode = new Label();
+    private TextField textInviteCode = new TextField(); // Initialize the text field
 
     // Constructor that accepts MainController for navigation
     public DisplayDatabaseFX(maincontroller controller) {
@@ -38,12 +40,11 @@ public class DisplayDatabaseFX extends Application {
         // Set up the TableView and its columns
         tableView = new TableView<>();
         setupTableColumns();
-        
+
         Button btnBack = new Button("Back");
         btnBack.setOnAction(e -> controller.showViewArticlesPage());
         btnBack.setStyle("-fx-background-color: #FF6F61; -fx-text-fill: white; -fx-font-size: 18px;");
-        
-        
+
         // Refresh button to reload the user data
         Button btnRefresh = new Button("Refresh");
         btnRefresh.setStyle("-fx-background-color: #FF6F61; -fx-text-fill: white; -fx-font-size: 18px;");
@@ -64,10 +65,13 @@ public class DisplayDatabaseFX extends Application {
         btnExit.setStyle("-fx-background-color: #FF6F61; -fx-text-fill: white; -fx-font-size: 18px;");
         btnExit.setOnAction(e -> controller.showEntryPage());
 
+        // Configure the invite code text field to be non-editable and styled
+        setupInviteCodeField();
+
         // Layout configuration using VBox with spacing and alignment
         VBox layout = new VBox(20);
         layout.setAlignment(Pos.CENTER);
-        layout.getChildren().addAll(tableView, btnRefresh, btnGenerateInvite, btnDelete, labelInviteCode, btnBack ,btnExit);
+        layout.getChildren().addAll(tableView, btnRefresh, btnGenerateInvite, btnDelete, textInviteCode, btnBack, btnExit);
 
         // Initial load of user data into the TableView
         refreshUserData();
@@ -77,74 +81,97 @@ public class DisplayDatabaseFX extends Application {
 
     // Set up columns for the TableView to display user information
     private void setupTableColumns() {
-        // Column for first name
         TableColumn<User, String> firstNameCol = new TableColumn<>("First Name");
         firstNameCol.setMinWidth(100);
         firstNameCol.setCellValueFactory(new PropertyValueFactory<>("firstName"));
 
-        // Column for middle name
         TableColumn<User, String> middleNameCol = new TableColumn<>("Middle Name");
         middleNameCol.setMinWidth(100);
         middleNameCol.setCellValueFactory(new PropertyValueFactory<>("middleName"));
 
-        // Column for last name
         TableColumn<User, String> lastNameCol = new TableColumn<>("Last Name");
         lastNameCol.setMinWidth(100);
         lastNameCol.setCellValueFactory(new PropertyValueFactory<>("lastName"));
 
-        // Column for email
         TableColumn<User, String> emailCol = new TableColumn<>("Email");
         emailCol.setMinWidth(200);
         emailCol.setCellValueFactory(new PropertyValueFactory<>("email"));
 
-        // Column for username
         TableColumn<User, String> usernameCol = new TableColumn<>("Username");
         usernameCol.setMinWidth(150);
         usernameCol.setCellValueFactory(new PropertyValueFactory<>("username"));
 
-        // Column for user role
         TableColumn<User, String> roleCol = new TableColumn<>("Role");
         roleCol.setMinWidth(100);
         roleCol.setCellValueFactory(new PropertyValueFactory<>("role"));
 
-        // Add all columns to the TableView
         tableView.getColumns().addAll(firstNameCol, middleNameCol, lastNameCol, emailCol, usernameCol, roleCol);
     }
 
-    // Method to refresh and reload user data into the TableView
+    // Method to refresh and reload user data into the TableView from SQL database
     private void refreshUserData() {
-        // Fetch all users from the database
-        ArrayList<User> users = Database.getAllUsers();
-        // Convert the user list to an ObservableList for the TableView
-        userObservableList = FXCollections.observableArrayList(users);
-        tableView.setItems(userObservableList);
+        try {
+            ArrayList<User> users = Database.getAllUsers(); // Fetch all users from the SQL database
+            userObservableList = FXCollections.observableArrayList(users);
+            tableView.setItems(userObservableList);
+        } catch (SQLException e) {
+            showError("Error loading user data", e.getMessage());
+            e.printStackTrace();
+        }
     }
 
-    // Method to generate an invite code and display it in the label
+
+    // Method to initialize invite code display
+    private void setupInviteCodeField() {
+        textInviteCode.setEditable(false);
+        textInviteCode.setPromptText("Invite Code will appear here");
+        textInviteCode.setStyle("-fx-background-color: transparent; -fx-border-color: transparent; -fx-text-fill: black;");
+    }
+
+    // Method to generate a new invite code
     private void generateInviteCode() {
-        // Get a new invite code from the database
-        String inviteCode = Database.generateInviteCode();
-        // Set the label to show the generated code
-        labelInviteCode.setText("Invite Code: " + inviteCode);
+        try {
+            String inviteCode = Database.generateInviteCode(); // Get invite code from SQL database
+            if (inviteCode != null && !inviteCode.isEmpty()) {
+                textInviteCode.setText(inviteCode); // Display the invite code
+            } else {
+                textInviteCode.setText("Failed to generate invite code. Please try again.");
+            }
+        } catch (SQLException e) {
+            showError("Error generating invite code", e.getMessage());
+            e.printStackTrace();
+        }
     }
 
-    // Method to delete the selected user from the TableView and database
+
+    // Method to delete the selected user from the TableView and SQL database
     private void deleteUser() {
-        // Get the selected user from the TableView
         User selectedUser = tableView.getSelectionModel().getSelectedItem();
         if (selectedUser != null) {
-            // Delete the user from the database using their username
-            Database.deleteUser(selectedUser.getUsername());
-            // Refresh the TableView to reflect the deletion
-            refreshUserData();
+            Database.deleteUser(selectedUser.getUsername()); // Deletes from SQL database
+            refreshUserData(); // Refresh the TableView
         } else {
-            // Show a warning if no user is selected
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("No Selection");
-            alert.setHeaderText(null);
-            alert.setContentText("Please select a user to delete.");
-            alert.showAndWait();
+            showAlert("No Selection", "Please select a user to delete.");
         }
+    }
+
+
+    // Utility method to show an alert dialog
+    private void showAlert(String title, String content) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
+
+    // Utility method to show an error dialog
+    private void showError(String title, String content) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
     }
 
     public static void main(String[] args) {

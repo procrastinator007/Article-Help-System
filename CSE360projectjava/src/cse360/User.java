@@ -1,10 +1,6 @@
 package cse360;
 
-import java.io.Serializable;
-
-public class User implements Serializable {
-    private static final long serialVersionUID = 542148557600126242L;
-
+public class User {
     private String firstName;
     private String middleName;
     private String lastName;
