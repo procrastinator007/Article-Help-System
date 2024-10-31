@@ -10,6 +10,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
+import java.util.List;
+
 public class viewarticlestudent {
     private maincontroller controller;
     private TextArea articleDetails = new TextArea();
@@ -33,7 +35,7 @@ public class viewarticlestudent {
 
         articleList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
-                Article article = new ArticleDatabaseHandler().getArticleByTitle(newValue);
+                Article article = new ArticleDatabaseHandler().getArticleByTitle(newValue.replace(" (Hidden)", ""));
                 articleDetails.setText(article != null ? article.toString() : "Article details not found.");
             }
         });
@@ -59,7 +61,14 @@ public class viewarticlestudent {
     private void updateArticleList(String keyword) {
         ArticleDatabaseHandler handler = new ArticleDatabaseHandler();
         articleList.getItems().clear();
-        articleList.getItems().addAll(handler.listArticleTitles(keyword, false));
+        
+        // Fetch the list of article titles with the given keyword and only show non-hidden articles
+        List<String> titles = handler.listArticleTitles(keyword, false);
+        
+        // Debugging print statement to check fetched titles
+        System.out.println("Fetched Articles: " + titles);
+        
+        articleList.getItems().addAll(titles);
     }
 
     private void performSearch() {

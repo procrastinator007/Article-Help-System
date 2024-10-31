@@ -3,11 +3,13 @@ package cse360;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
+
+import java.io.IOException;
+import java.util.List;
 
 public class ViewArticlesPage {
     private maincontroller controller;
@@ -47,6 +49,9 @@ public class ViewArticlesPage {
         });
         articleDetails.setEditable(false);
 
+        // Enable multiple selection in the ListView
+        articleList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
         // Hide/Unhide button
         Button btnHideUnhide = new Button("Hide/Unhide");
         btnHideUnhide.setOnAction(e -> {
@@ -82,6 +87,22 @@ public class ViewArticlesPage {
             }
         });
 
+        // Backup selected articles button
+        Button btnBackupSelected = new Button("Backup Selected Articles");
+        btnBackupSelected.setOnAction(e -> {
+            List<String> selectedArticles = articleList.getSelectionModel().getSelectedItems();
+            if (selectedArticles != null && !selectedArticles.isEmpty()) {
+                articleDatabaseHandler.backupSelectedArticles(selectedArticles);
+                showAlert("Success", "Selected articles backed up successfully.");
+            } else {
+                showAlert("No Selection", "Please select one or more articles to back up.");
+            }
+        });
+
+        // View and restore from backup button
+        Button btnViewAndRestore = new Button("View and Restore Backup");
+        btnViewAndRestore.setOnAction(e -> controller.showBackupRestorationPage());
+
         // Additional admin buttons
         Button btnDisplayUsers = new Button("User Database");
         btnDisplayUsers.setOnAction(e -> controller.showDisplayUserDatabasePage());
@@ -97,7 +118,7 @@ public class ViewArticlesPage {
         btnBack.setOnAction(e -> controller.showEntryPage());
 
         // Layout configuration
-        VBox layout = new VBox(10, articleList, articleDetails, btnHideUnhide, btnDelete, btnDisplayUsers, btnCreateArticle, btnLogout, btnBack);
+        VBox layout = new VBox(10, articleList, articleDetails, btnHideUnhide, btnDelete, btnBackupSelected, btnViewAndRestore, btnDisplayUsers, btnCreateArticle, btnLogout, btnBack);
         layout.setPadding(new Insets(20));
         layout.setAlignment(Pos.CENTER);
 
@@ -122,7 +143,6 @@ public class ViewArticlesPage {
             }
         }
     }
-
 
     // Method to perform the search based on the entered keyword
     private void performSearch() {

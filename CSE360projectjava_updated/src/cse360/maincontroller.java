@@ -41,12 +41,19 @@ public class maincontroller extends Application {
         primaryStage.setScene(loginPageScene);
     }
     
-    public void showViewArticlesPage() {
-        ViewArticlesPage viewArticlesPage = new ViewArticlesPage(this);
-        viewArticlesPageScene = new Scene(viewArticlesPage.getPage(), 1024, 768);
-        primaryStage.setScene(viewArticlesPageScene);
+    public void showBackupRestorationPage() {
+        BackupRestorationPage backupRestorationPage = new BackupRestorationPage(this);
+        Scene scene = new Scene(backupRestorationPage.getPage(), 800, 600);
+        primaryStage.setScene(scene);
+        primaryStage.show();
     }
 
+    public void showViewArticlesPage() {
+        ViewArticlesPage viewArticlesPage = new ViewArticlesPage(this);
+        Scene scene = new Scene(viewArticlesPage.getPage(), 800, 600);
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
     // Method to show the teacher's version of ViewArticlesPage without user database options
     public void showViewArticlesTeacherPage() {
         ViewArticlesTeacherPage viewArticlesTeacherPage = new ViewArticlesTeacherPage(this);
@@ -91,6 +98,7 @@ public class maincontroller extends Application {
         displayDatabaseScene = new Scene(displayDatabase.getPage(), 800, 600);
         primaryStage.setScene(displayDatabaseScene);
     }
+    
     
     public void logout() {
         showEntryPage(); // Go back to the entry page
