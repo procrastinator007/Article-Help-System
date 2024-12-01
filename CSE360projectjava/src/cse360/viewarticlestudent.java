@@ -101,13 +101,13 @@ public class viewarticlestudent {
     private void filterArticlesByLevel() {
         String selectedLevel = levelComboBox.getValue();
         List<Article> articles = selectedLevel.equals("All") ?
-            articleDatabaseHandler.getArticles() :
-            articleDatabaseHandler.getArticlesByLevel(selectedLevel);
+                articleDatabaseHandler.getArticles() :
+                articleDatabaseHandler.getArticlesByLevel(selectedLevel);
 
         articleList.getItems().clear();
         for (Article article : articles) {
-            if (article.getSpecialGroups().contains(groupName)) {
-                articleList.getItems().add(article.getTitle() + (article.isHidden() ? " (Hidden)" : ""));
+            if (article.getSpecialGroups().contains(groupName) && !article.isHidden()) {
+                articleList.getItems().add(article.getTitle());
             }
         }
     }
@@ -119,7 +119,7 @@ public class viewarticlestudent {
         // Fetch all articles and filter based on the selected search type
         List<Article> articles = articleDatabaseHandler.getArticles();
         for (Article article : articles) {
-            if (article.getSpecialGroups().contains(groupName)) {
+            if (article.getSpecialGroups().contains(groupName) && !article.isHidden()) { // Exclude hidden articles
                 boolean matches = false;
 
                 switch (searchType) {
@@ -149,7 +149,7 @@ public class viewarticlestudent {
                 }
 
                 if (matches) {
-                    articleList.getItems().add(article.getTitle() + (article.isHidden() ? " (Hidden)" : ""));
+                    articleList.getItems().add(article.getTitle());
                 }
             }
         }
